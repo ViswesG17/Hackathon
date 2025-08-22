@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aquatech Monitoring</title>
+    <!-- Link to Tailwind CSS for easy styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at 100% 100%, #e0f2fe, #bfdbfe, #93c5fd);
+        }
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .menu-panel {
+            position: fixed;
+            top: 0;
+            left: -320px; /* Hidden off-screen to the left */
+            width: 300px;
+            height: 100%;
+            background-color: white;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            transition: left 0.3s ease-in-out;
+            z-index: 50;
+        }
+        .menu-panel.open {
+            left: 0; /* Slides into view */
+        }
+        .page { display: none; }
+        .page.active { display: block; }
+    </style>
+</head>
+<body>
+
+    <!-- Login Page -->
+    <div id="login-page" class="page active min-h-screen flex items-center justify-center">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+            <div class="flex justify-center mb-6">
+                <img src="https://tse1.mm.bing.net/th/id/OIP.4AhxWREfRQVnN0M4rNU61QHaE8?pid=Api&P=0&h=180" alt="Prawn Icon" class="w-24 h-24 object-contain" onerror="this.onerror=null; this.src='https://placehold.co/96x96/e0f2fe/0c4a6e?text=Aqua';">
+            </div>
+            <h1 class="text-3xl font-bold text-center text-blue-700 mb-2">Aquatech Monitoring</h1>
+            <p class="text-center text-slate-500 mb-6">Please log in to continue.</p>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="username" class="block text-sm font-medium text-slate-700">Username</label>
+                    <input type="text" id="username" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md" placeholder="Enter any username" required>
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-slate-700">Password</label>
+                    <input type="password" id="password" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md" placeholder="Enter any password" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Container -->
+    <div id="dashboard-container" class="page w-full min-h-screen p-8">
+
+        <!-- Menu Panel (initially hidden) -->
+        <div id="menuPanel" class="menu-panel p-6">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h3 class="text-xl font-semibold">Select Pond</h3>
+                <button id="closeMenuBtn" class="p-2 rounded-full hover:bg-gray-200 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <ul id="pondList" class="space-y-2 max-h-[80vh] overflow-y-auto">
+                <!-- Pond list items will be generated here by JavaScript -->
+            </ul>
+        </div>
+
+        <!-- Header Section -->
+        <header class="flex flex-col sm:flex-row justify-between items-center p-4 bg-white rounded-xl shadow-lg mb-8 gap-4">
+            <div class="flex items-center gap-4">
+                <button id="menuBtn" class="p-2 rounded-lg bg-gray-100 border border-gray-300 hover:bg-gray-200 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                </button>
+                <img src="https://tse1.mm.bing.net/th/id/OIP.4AhxWREfRQVnN0M4rNU61QHaE8?pid=Api&P=0&h=180" alt="Prawn Icon" class="w-16 h-16 object-contain" onerror="this.onerror=null; this.src='https://placehold.co/64x64/e0f2fe/0c4a6e?text=Prawn';">
+                <div>
+                    <h1 class="text-2xl font-bold">Aquatech Monitoring</h1>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="toggleChartBtn" class="px-4 py-2 bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition-colors">Toggle Chart Type</button>
+            </div>
+        </header>
+
+        <!-- Dashboard Grid -->
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Main Section -->
+            <div class="flex-1 bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between">
+                <div>
+                    <div class="mb-6">
+                        <h3 class="text-xl font-semibold mb-2 pb-2 border-b-2 border-gray-200">
+                            <span id="currentPondLabel">Loading...</span> Metrics
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-y-2">
+                            <p class="text-lg mb-1"><span class="font-medium">Total Harvest Yield:</span> <span class="font-bold text-blue-600" id="totalYield">--</span></p>
+                            <p class="text-lg mb-1"><span class="font-medium">Avg. Body Weight:</span> <span class="font-bold text-green-600" id="avgWeight">--</span></p>
+                            <p class="text-lg mb-1"><span class="font-medium">Survival Rate:</span> <span class="font-bold" id="survivalRate">--</span></p>
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 pb-2 border-b-2 border-gray-200">Water Quality Prediction (Live)</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div><h3 class="text-sm font-semibold mb-4 text-center">Dissolved Oxygen (mg/L)</h3><div class="w-full h-40"><canvas id="doChart"></canvas></div></div>
+                        <div><h3 class="text-sm font-semibold mb-4 text-center">pH</h3><div class="w-full h-40"><canvas id="phChart"></canvas></div></div>
+                        <div><h3 class="text-sm font-semibold mb-4 text-center">Temperature (°C)</h3><div class="w-full h-40"><canvas id="tempChart"></canvas></div></div>
+                        <div><h3 class="text-sm font-semibold mb-4 text-center">Ammonia (ppm)</h3><div class="w-full h-40"><canvas id="ammoniaChart"></canvas></div></div>
+                        <div><h3 class="text-sm font-semibold mb-4 text-center">Nitrite (ppm)</h3><div class="w-full h-40"><canvas id="nitriteChart"></canvas></div></div>
+                        <div><h3 class="text-sm font-semibold mb-4 text-center">Salinity (ppt)</h3><div class="w-full h-40"><canvas id="salinityChart"></canvas></div></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Right Section -->
+            <div class="flex-initial w-full lg:w-1/4 bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xl font-semibold mb-2 pb-2 border-b-2 border-gray-200">Pond Health Prediction</h3>
+                    <div class="space-y-4">
+                        <p class="text-lg"><span class="font-medium">Farm Name:</span> <span id="farmName">--</span></p>
+                        <p class="text-lg"><span class="font-medium">Pond Type:</span> <span id="pondType">--</span></p>
+                        <p class="text-lg"><span class="font-medium">Predicted Status:</span> <span id="pondStatus">--</span></p>
+                        <p class="text-lg"><span class="font-medium">Reason:</span> <span id="reason">--</span></p>
+                        <p class="text-lg"><span class="font-medium">Recommended Action:</span> <span id="recommendedAction">--</span></p>
+                        <p class="text-lg"><span class="font-medium">Report Timestamp:</span> <span id="reportTimestamp">--</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // --- 1. CONFIG & STATE ---
+        const appState = {
+            allPonds: [],
+            selectedPond: null,
+            currentChartType: 'line',
+            charts: {},
+            updateInterval: null,
+        };
+
+        // --- 2. DOM REFERENCES ---
+        const pages = {
+            login: document.getElementById('login-page'),
+            dashboard: document.getElementById('dashboard-container'),
+        };
+        const elements = {
+            loginForm: document.getElementById('login-form'),
+            menuPanel: document.getElementById('menuPanel'),
+            menuBtn: document.getElementById('menuBtn'),
+            closeMenuBtn: document.getElementById('closeMenuBtn'),
+            pondList: document.getElementById('pondList'),
+            toggleChartBtn: document.getElementById('toggleChartBtn'),
+            currentPondLabel: document.getElementById('currentPondLabel'),
+            totalYield: document.getElementById('totalYield'),
+            avgWeight: document.getElementById('avgWeight'),
+            survivalRate: document.getElementById('survivalRate'),
+            farmName: document.getElementById('farmName'),
+            pondType: document.getElementById('pondType'),
+            pondStatus: document.getElementById('pondStatus'),
+            reason: document.getElementById('reason'),
+            recommendedAction: document.getElementById('recommendedAction'),
+            reportTimestamp: document.getElementById('reportTimestamp'),
+            chartCanvases: {
+                do: document.getElementById('doChart'), ph: document.getElementById('phChart'),
+                temp: document.getElementById('tempChart'), ammonia: document.getElementById('ammoniaChart'),
+                nitrite: document.getElementById('nitriteChart'), salinity: document.getElementById('salinityChart'),
+            }
+        };
+
+        // --- 3. SIMULATOR & PREDICTION LOGIC (SELF-CONTAINED) ---
+        function generatePondDataStore() {
+            const farmNames = ['Godavari Aqua', 'Krishna Delta', 'Coastal Farms'];
+            const pondTypes = ['Earthen', 'Lined'];
+            for (let i = 1; i <= 20; i++) {
+                const pondId = `Pond-${i}`;
+                appState.allPonds.push({
+                    pond_id: pondId,
+                    farm_name: farmNames[i % farmNames.length],
+                    pond_type: pondTypes[i % pondTypes.length],
+                    active_crop_id: `CROP-${i}`, // Simulate all ponds having an active crop
+                    isCrisis: false,
+                });
+            }
+        }
+
+        function generateLiveData(pond) {
+            if (Math.random() < 0.05) pond.isCrisis = true;
+            else if (Math.random() < 0.1) pond.isCrisis = false;
+
+            if (pond.isCrisis) {
+                return {
+                    dissolved_oxygen_mg_l: (Math.random() * 2.0 + 2.0).toFixed(2),
+                    ph: (Math.random() * 1.5 + 6.0).toFixed(2),
+                    temperature_c: (Math.random() * 3 + 29).toFixed(2),
+                    ammonia_ppm: (Math.random() * 0.8 + 0.5).toFixed(2),
+                    nitrite_ppm: (Math.random() * 0.2 + 0.1).toFixed(2),
+                    salinity_ppt: (Math.random() * 5 + 20).toFixed(2),
+                };
+            } else {
+                return {
+                    dissolved_oxygen_mg_l: (Math.random() * 2.5 + 5.5).toFixed(2),
+                    ph: (Math.random() * 1.0 + 7.5).toFixed(2),
+                    temperature_c: (Math.random() * 4 + 27).toFixed(2),
+                    ammonia_ppm: (Math.random() * 0.2 + 0.01).toFixed(2),
+                    nitrite_ppm: (Math.random() * 0.1).toFixed(2),
+                    salinity_ppt: (Math.random() * 5 + 15).toFixed(2),
+                };
+            }
+        }
+        
+        function predictCrisis(liveData) {
+            if (liveData.dissolved_oxygen_mg_l < 4.5) return { status: 'Warning', reason: 'Low Dissolved Oxygen', action: 'Start all aerators immediately.' };
+            if (liveData.ammonia_ppm > 0.5) return { status: 'Warning', reason: 'High Ammonia Levels', action: 'Reduce feed and prepare for water exchange.' };
+            if (liveData.ph < 7.5) return { status: 'Warning', reason: 'Low pH (Acidic)', action: 'Prepare to add agricultural lime.' };
+            if (liveData.ph > 8.8) return { status: 'Warning', reason: 'High pH (Alkaline)', action: 'Prepare for a partial water exchange.' };
+            return { status: 'Healthy', reason: 'N/A', action: 'No action required.' };
+        }
+
+
+        // --- 4. CHARTING LOGIC ---
+        function createOrUpdateChart(canvasKey, label, color, data, type, instance) {
+            const labels = ['-30min', '-25min', '-20min', '-15min', '-10min', '-5min', 'Live'];
+            const ctx = elements.chartCanvases[canvasKey].getContext('2d');
+            
+            if (instance) {
+                instance.data.datasets[0].data = data;
+                instance.config.type = type;
+                instance.update();
+                return instance;
+            } else {
+                return new Chart(ctx, {
+                    type: type,
+                    data: { labels: labels, datasets: [{
+                        label: label, data: data, borderColor: color,
+                        backgroundColor: color.replace(')', ', 0.2)'), tension: 0.3, fill: true
+                    }]},
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                });
+            }
+        }
+
+        // --- 5. UI UPDATE ---
+        function updateDashboard(pond) {
+            if (!pond) return;
+            
+            appState.selectedPond = pond;
+            elements.currentPondLabel.textContent = pond.pond_id;
+
+            const liveData = generateLiveData(pond);
+            const prediction = predictCrisis(liveData);
+
+            // Update text fields
+            elements.farmName.textContent = pond.farm_name;
+            elements.pondType.textContent = pond.pond_type;
+            elements.pondStatus.textContent = prediction.status;
+            elements.reason.textContent = prediction.reason;
+            elements.recommendedAction.textContent = prediction.action;
+            elements.reportTimestamp.textContent = new Date().toLocaleString();
+            
+            // Static data for demo
+            elements.totalYield.textContent = (Math.random() * 4000 + 1000).toFixed(0) + " kg";
+            elements.avgWeight.textContent = (Math.random() * 30 + 20).toFixed(1) + " g";
+            elements.survivalRate.textContent = (Math.random() * 25 + 70).toFixed(1) + "%";
+
+            // Update charts with random historical data for simulation
+            const generateSeries = (min, max) => Array.from({length: 6}, () => (Math.random() * (max - min) + min).toFixed(2));
+            
+            appState.charts.do = createOrUpdateChart('do', 'DO', 'rgb(37, 99, 235)', [...generateSeries(5.5, 7.5), liveData.dissolved_oxygen_mg_l], appState.currentChartType, appState.charts.do);
+            appState.charts.ph = createOrUpdateChart('ph', 'pH', 'rgb(79, 70, 229)', [...generateSeries(7.8, 8.5), liveData.ph], appState.currentChartType, appState.charts.ph);
+            appState.charts.temp = createOrUpdateChart('temp', 'Temp', 'rgb(234, 88, 12)', [...generateSeries(28, 31), liveData.temperature_c], appState.currentChartType, appState.charts.temp);
+            appState.charts.ammonia = createOrUpdateChart('ammonia', 'Ammonia', 'rgb(217, 119, 6)', [...generateSeries(0.01, 0.2), liveData.ammonia_ppm], appState.currentChartType, appState.charts.ammonia);
+            appState.charts.nitrite = createOrUpdateChart('nitrite', 'Nitrite', 'rgb(15, 118, 110)', [...generateSeries(0.01, 0.1), liveData.nitrite_ppm], appState.currentChartType, appState.charts.nitrite);
+            appState.charts.salinity = createOrUpdateChart('salinity', 'Salinity', 'rgb(154, 52, 18)', [...generateSeries(15, 25), liveData.salinity_ppt], appState.currentChartType, appState.charts.salinity);
+        }
+
+        // --- 6. INITIALIZATION & EVENT LISTENERS ---
+        function initializeApp() {
+            generatePondDataStore(); // Create the fake pond data
+            
+            elements.pondList.innerHTML = '';
+            appState.allPonds.forEach(pond => {
+                const li = document.createElement('li');
+                const button = document.createElement('button');
+                button.textContent = pond.pond_id + " (" + pond.farm_name + ")";
+                button.className = 'w-full text-left p-3 rounded-lg hover:bg-gray-100 transition-colors';
+                button.onclick = () => {
+                    updateDashboard(pond);
+                    elements.menuPanel.classList.remove('open');
+                };
+                li.appendChild(button);
+                elements.pondList.appendChild(li);
+            });
+
+            if (appState.allPonds.length > 0) {
+                updateDashboard(appState.allPonds[0]);
+                if (appState.updateInterval) clearInterval(appState.updateInterval);
+                appState.updateInterval = setInterval(() => updateDashboard(appState.selectedPond), 5000); // Refresh every 5s
+            }
+        }
+
+        elements.loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            pages.login.classList.remove('active');
+            pages.dashboard.classList.add('active');
+            initializeApp();
+        });
+
+        elements.menuBtn.addEventListener('click', () => elements.menuPanel.classList.add('open'));
+        elements.closeMenuBtn.addEventListener('click', () => elements.menuPanel.classList.remove('open'));
+        elements.toggleChartBtn.addEventListener('click', () => {
+            appState.currentChartType = appState.currentChartType === 'line' ? 'bar' : 'line';
+            if (appState.selectedPond) updateDashboard(appState.selectedPond);
+        });
+
+    </script>
+</body>
+</html>
