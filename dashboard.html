@@ -35,15 +35,18 @@
         }
         .page { display: none; }
         .page.active { display: block; }
+        article{
+            justify-items: center;
+        }
     </style>
 </head>
 <body>
 
     <!-- Login Page -->
-    <div id="login-page" class="page active min-h-screen flex items-center justify-center">
+    <article id="login-page" class="page active min-h-screen flex items-center justify-center">
         <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
             <div class="flex justify-center mb-6">
-                <img src="https://tse1.mm.bing.net/th/id/OIP.4AhxWREfRQVnN0M4rNU61QHaE8?pid=Api&P=0&h=180" alt="Prawn Icon" class="w-24 h-24 object-contain" onerror="this.onerror=null; this.src='https://placehold.co/96x96/e0f2fe/0c4a6e?text=Aqua';">
+                <img src="https://i.etsystatic.com/49528872/r/il/6faa88/6018852232/il_300x300.6018852232_uyzr.jpg " alt="Prawn Icon" class="w-24 h-24 object-contain" onerror="this.onerror=null; this.src='https://placehold.co/96x96/e0f2fe/0c4a6e?text=Aqua';">
             </div>
             <h1 class="text-3xl font-bold text-center text-blue-700 mb-2">Aquatech Monitoring</h1>
             <p class="text-center text-slate-500 mb-6">Please log in to continue.</p>
@@ -59,7 +62,7 @@
                 <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Login</button>
             </form>
         </div>
-    </div>
+    </article>
 
     <!-- Main Dashboard Container -->
     <div id="dashboard-container" class="page w-full min-h-screen p-8">
@@ -83,7 +86,7 @@
                 <button id="menuBtn" class="p-2 rounded-lg bg-gray-100 border border-gray-300 hover:bg-gray-200 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                 </button>
-                <img src="https://tse1.mm.bing.net/th/id/OIP.4AhxWREfRQVnN0M4rNU61QHaE8?pid=Api&P=0&h=180" alt="Prawn Icon" class="w-16 h-16 object-contain" onerror="this.onerror=null; this.src='https://placehold.co/64x64/e0f2fe/0c4a6e?text=Prawn';">
+                <img src="https://i.etsystatic.com/49528872/r/il/6faa88/6018852232/il_300x300.6018852232_uyzr.jpg" alt="Prawn Icon" class="w-16 h-16 object-contain" onerror="this.onerror=null; this.src='https://placehold.co/64x64/e0f2fe/0c4a6e?text=Prawn';">
                 <div>
                     <h1 class="text-2xl font-bold">Aquatech Monitoring</h1>
                 </div>
@@ -181,12 +184,12 @@
             const farmNames = ['Godavari Aqua', 'Krishna Delta', 'Coastal Farms'];
             const pondTypes = ['Earthen', 'Lined'];
             for (let i = 1; i <= 20; i++) {
-                const pondId = `Pond-${i}`;
+                const pondId = 'Pond-' + i;
                 appState.allPonds.push({
                     pond_id: pondId,
                     farm_name: farmNames[i % farmNames.length],
                     pond_type: pondTypes[i % pondTypes.length],
-                    active_crop_id: `CROP-${i}`, // Simulate all ponds having an active crop
+                    active_crop_id: 'CROP-' + i, // Simulate all ponds having an active crop
                     isCrisis: false,
                 });
             }
@@ -228,7 +231,7 @@
 
         // --- 4. CHARTING LOGIC ---
         function createOrUpdateChart(canvasKey, label, color, data, type, instance) {
-            const labels = ['-30min', '-25min', '-20min', '-15min', '-10min', '-5min', 'Live'];
+            const labels = ['-30sec', '-25sec', '-20sec', '-15sec', '-10sec', '-5sec', 'Live'];
             const ctx = elements.chartCanvases[canvasKey].getContext('2d');
             
             if (instance) {
@@ -267,9 +270,9 @@
             elements.reportTimestamp.textContent = new Date().toLocaleString();
             
             // Static data for demo
-            elements.totalYield.textContent = (Math.random() * 4000 + 1000).toFixed(0) + " kg";
-            elements.avgWeight.textContent = (Math.random() * 30 + 20).toFixed(1) + " g";
-            elements.survivalRate.textContent = (Math.random() * 25 + 70).toFixed(1) + "%";
+            elements.totalYield.textContent = (Math.random() * 4000 + 1000).toFixed(0) + ' kg';
+            elements.avgWeight.textContent = (Math.random() * 30 + 20).toFixed(1) + ' g';
+            elements.survivalRate.textContent = (Math.random() * 25 + 70).toFixed(1) + '%';
 
             // Update charts with random historical data for simulation
             const generateSeries = (min, max) => Array.from({length: 6}, () => (Math.random() * (max - min) + min).toFixed(2));
@@ -290,7 +293,7 @@
             appState.allPonds.forEach(pond => {
                 const li = document.createElement('li');
                 const button = document.createElement('button');
-                button.textContent = pond.pond_id + " (" + pond.farm_name + ")";
+                button.textContent = pond.pond_id + ' (' + pond.farm_name + ')';
                 button.className = 'w-full text-left p-3 rounded-lg hover:bg-gray-100 transition-colors';
                 button.onclick = () => {
                     updateDashboard(pond);
